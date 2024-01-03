@@ -53,6 +53,7 @@ require("packer").startup(function(use)
     })
     use("NeogitOrg/neogit")
     use("sindrets/diffview.nvim")
+    use("voldikss/vim-floaterm")
 end)
 
 if packer_bootstrap then
@@ -201,3 +202,7 @@ require("neogit").setup({})
 require("nvim-tree").setup()
 api = require("nvim-tree.api")
 vim.keymap.set("n", "<C-n>", api.tree.toggle, {})
+
+-- Setup vim-floaterm
+vim.keymap.set("n", "<leader>ft", ":FloatermToggle<cr>")
+vim.keymap.set("t", "<Esc>", "<C-\\><C-n>")
