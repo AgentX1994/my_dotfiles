@@ -110,6 +110,7 @@ local function on_attach(client, buffer)
     end
 end
 
+local rt = require("rust-tools")
 local rust_tools_opts = {
     runnables = {
         use_telescope = true,
@@ -121,7 +122,13 @@ local rust_tools_opts = {
         other_hints_prefix = "",
     },
     server = {
-        on_attach = on_attach,
+        on_attach = function(client, buffer)
+            -- Hover actions
+            vim.keymap.set("n", "<C-h>", rt.hover_actions.hover_actions, {buffer=buffer})
+            -- Code action groups
+            vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, {buffer=buffer})
+            on_attach(client, buffer)
+        end,
         settings = {
             ["rust_analyzer"] = {
                 checkOnSave = {
@@ -132,13 +139,14 @@ local rust_tools_opts = {
     },
 }
 
-require("rust-tools").setup(rust_tools_opts)
+rt.setup(rust_tools_opts)
 
 -- setup other LSPs
 local lspconfig = require("lspconfig")
 lspconfig.pyright.setup({})
 lspconfig.tsserver.setup({})
 lspconfig.clangd.setup({})
+lspconfig.standardrb.setup({})
 
 -- Setup Completion
 -- See https://github.com/hrsh7th/nvim-cmp#basic-configuration
@@ -162,7 +170,7 @@ cmp.setup({
     ["<C-e>"] = cmp.mapping.close(),
     ["<CR>"] = cmp.mapping.confirm({
       behavior = cmp.ConfirmBehavior.Insert,
-      select = true,
+      select = false,
     }),
   },
 
