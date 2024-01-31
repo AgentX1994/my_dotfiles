@@ -36,7 +36,7 @@ require("packer").startup(function(use)
         requires = { "hrsh7th/nvim-cmp" },
     })
     use("hrsh7th/vim-vsnip")
-    use("simrat39/rust-tools.nvim")
+    use({"mrcjkb/rustaceanvim", ft= {"rust"}})
     use("nvim-lua/popup.nvim")
     use("nvim-lua/plenary.nvim")
     use("nvim-telescope/telescope.nvim")
@@ -54,6 +54,8 @@ require("packer").startup(function(use)
     use("NeogitOrg/neogit")
     use("sindrets/diffview.nvim")
     use("voldikss/vim-floaterm")
+    use {"nvim-treesitter/nvim-treesitter", run=":TSUpdate"}
+    use {"folke/trouble.nvim", requires="nvim-tree/nvim-web-devicons"}
 end)
 
 if packer_bootstrap then
@@ -63,7 +65,6 @@ end
 
 vim.o.completeopt = "menuone,noinsert,noselect"
 vim.opt.shortmess = vim.opt.shortmess + "c"
-
 
 local function on_attach(client, buffer)
     -- Key mappings
@@ -79,8 +80,6 @@ local function on_attach(client, buffer)
     vim.keymap.set("n", "g0", vim.lsp.buf.document_symbol, keymap_opts)
     vim.keymap.set("n", "gW", vim.lsp.buf.workspace_symbol, keymap_opts)
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, keymap_opts)
-    -- Code Actions
-    vim.keymap.set("n", "ga", vim.lsp.buf.code_action, keymap_opts)
 
     -- Set updatetime for CursorHold
     -- 300ms of no cursor movement to trigger CursorHold
@@ -108,38 +107,41 @@ local function on_attach(client, buffer)
           group = format_sync_grp,
         })
     end
+
+    if client.server_capabilities.inlayHintProvider then
+        vim.lsp.inlay_hint.enable(buffer, true)
+    end
 end
 
-local rt = require("rust-tools")
-local rust_tools_opts = {
-    runnables = {
-        use_telescope = true,
+vim.g.rustaceanvim = {
+  -- Plugin configuration
+  tools = {
+  },
+  -- LSP configuration
+  server = {
+    on_attach = function(client, bufnr)
+        -- Hover actions
+        vim.keymap.set("n", "<C-h>", vim.lsp.buf.hover, {buffer=buffer})
+        -- Code action groups
+        local code_action = function()
+            vim.cmd.RustLsp('codeAction')
+        end
+        vim.keymap.set("n", "<Leader>a", code_action, {buffer=buffer})
+        on_attach(client, buffer)
+    end,
+    settings = {
+      -- rust-analyzer language server configuration
+      ["rust-analyzer"] = {
+          check = {
+              command = "clippy"
+          }
+      },
     },
-    inlay_hints = {
-        auto = true,
-        show_parameter_hints = true,
-        parameter_hints_prefix = "",
-        other_hints_prefix = "",
-    },
-    server = {
-        on_attach = function(client, buffer)
-            -- Hover actions
-            vim.keymap.set("n", "<C-h>", rt.hover_actions.hover_actions, {buffer=buffer})
-            -- Code action groups
-            vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, {buffer=buffer})
-            on_attach(client, buffer)
-        end,
-        settings = {
-            ["rust_analyzer"] = {
-                checkOnSave = {
-                    command = "clippy",
-                },
-            },
-        },
-    },
+  },
+  -- DAP configuration
+  dap = {
+  },
 }
-
-rt.setup(rust_tools_opts)
 
 -- setup other LSPs
 local lspconfig = require("lspconfig")
@@ -147,6 +149,33 @@ lspconfig.pyright.setup({})
 lspconfig.tsserver.setup({})
 lspconfig.clangd.setup({})
 lspconfig.standardrb.setup({})
+
+-- Setup treesitter for parsing/highlighting
+vim.filetype.add({extension = {wgsl = "wgsl"}})
+local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
+require('nvim-treesitter.configs').setup {
+    ensure_installed = {"lua", "c", "cpp", "python", "rust", "wgsl"},
+    highlight = {
+        enable = true
+    },
+    incremental_selection = {
+        enable = true,
+        keymaps = {
+            init_selection = "gnn",
+            node_incremental = "grn",
+            scope_incremental = "grc",
+            node_decremental = "grm",
+        },
+    },
+}
+
+vim.wo.foldmethod = "expr"
+vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
+vim.o.foldlevelstart = 99 -- do not close folds when a buffer is opened
+
+if vim.fn.executable("wgsl_analyzer") == 1 then
+    lspconfig.wgsl_analyzer.setup({})
+end
 
 -- Setup Completion
 -- See https://github.com/hrsh7th/nvim-cmp#basic-configuration
