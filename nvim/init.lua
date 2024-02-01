@@ -243,3 +243,11 @@ vim.keymap.set("n", "<C-n>", api.tree.toggle, {})
 -- Setup vim-floaterm
 vim.keymap.set("n", "<leader>ft", ":FloatermToggle<cr>")
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>")
+
+-- Style floating window border by grabbing the colors from
+-- the existing highlight group
+local colors = vim.api.nvim_get_hl(0, {name="Normal"})
+vim.api.nvim_set_hl(0, "FloatermBorder", {
+    bg=colors.bg,
+    fg=colors.fg
+})
