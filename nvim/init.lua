@@ -1,67 +1,56 @@
 vim.g.mapleader = ","
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
--- Ensure packer is installed
-local ensure_packer = function()
-    local fn = vim.fn
-    local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
-    if fn.empty(fn.glob(install_path)) > 0 then
-        fn.system({ "git", "clone", "--depth", "1", "git@github.com:wbthomason/packer.nvim.git", install_path })
-        vim.cmd([[packadd packer.nvim]])
-        return true
-    end
-    return false
+-- Ensure lazy is installed
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
 end
+vim.opt.rtp:prepend(lazypath)
 
-local packer_bootstrap = ensure_packer()
-
-require("packer").startup(function(use)
-    use("wbthomason/packer.nvim")
-    use("neovim/nvim-lspconfig")
-    use({
+require("lazy").setup({
+    "neovim/nvim-lspconfig",
+    {
         "j-hui/fidget.nvim",
         config = function()
             require("fidget").setup()
-    end
-    })
-
+        end
+    },
     -- Autocompletion framework
-    use("hrsh7th/nvim-cmp")
-    use({
-        "hrsh7th/cmp-nvim-lsp",
-        "hrsh7th/cmp-vsnip",
-        "hrsh7th/cmp-path",
-        "hrsh7th/cmp-buffer",
-        after = { "hrsh7th/nvim-cmp" },
-        requires = { "hrsh7th/nvim-cmp" },
-    })
-    use("hrsh7th/vim-vsnip")
-    use({"mrcjkb/rustaceanvim", ft= {"rust"}})
-    use("nvim-lua/popup.nvim")
-    use("nvim-lua/plenary.nvim")
-    use("nvim-telescope/telescope.nvim")
+    {"hrsh7th/nvim-cmp", dependencies= {"hrsh7th/nvim-cmp"}},
+    {"hrsh7th/nvim-cmp", dependencies= {"hrsh7th/cmp-nvim-lsp"}},
+    {"hrsh7th/nvim-cmp", dependencies= {"hrsh7th/cmp-vsnip"}},
+    {"hrsh7th/nvim-cmp", dependencies= {"hrsh7th/cmp-path"}},
+    {"hrsh7th/nvim-cmp", dependencies= {"hrsh7th/cmp-buffer"}},
+    "hrsh7th/vim-vsnip",
+    {"mrcjkb/rustaceanvim", ft= {"rust"}},
+    "nvim-lua/popup.nvim",
+    "nvim-lua/plenary.nvim",
+    "nvim-telescope/telescope.nvim",
 
-    use("rafamadriz/friendly-snippets")
-    use("catppuccin/vim")
-    use("vim-airline/vim-airline")
-    use("nvim-tree/nvim-web-devicons")
-    use({
+    "rafamadriz/friendly-snippets",
+    "catppuccin/vim",
+    "vim-airline/vim-airline",
+    "nvim-tree/nvim-web-devicons",
+    {
       "nvim-tree/nvim-tree.lua",
-      requires = {
+      dependencies = {
         "nvim-tree/nvim-web-devicons",
       },
-    })
-    use("NeogitOrg/neogit")
-    use("sindrets/diffview.nvim")
-    use("voldikss/vim-floaterm")
-    use {"nvim-treesitter/nvim-treesitter", run=":TSUpdate"}
-    use {"folke/trouble.nvim", requires="nvim-tree/nvim-web-devicons"}
-end)
-
-if packer_bootstrap then
-    require("packer").sync()
-    return
-end
+    },
+    "NeogitOrg/neogit",
+    "sindrets/diffview.nvim",
+    "voldikss/vim-floaterm",
+    {"nvim-treesitter/nvim-treesitter", build=":TSUpdate"},
+    {"folke/trouble.nvim", dependecies="nvim-tree/nvim-web-devicons"},
+})
 
 vim.o.completeopt = "menuone,noinsert,noselect"
 vim.opt.shortmess = vim.opt.shortmess + "c"
@@ -221,6 +210,7 @@ vim.opt.softtabstop = 4
 vim.opt.number = true
 vim.opt.termguicolors = true
 vim.cmd("colorscheme catppuccin_frappe")
+vim.opt.clipboard = "unnamedplus"
 
 -- Setup telescope
 local builtin = require("telescope.builtin")
@@ -251,3 +241,6 @@ vim.api.nvim_set_hl(0, "FloatermBorder", {
     bg=colors.bg,
     fg=colors.fg
 })
+
+-- Setup a mapping for TroubleToggle
+vim.keymap.set("n", "<leader>x", function() require("trouble").toggle() end)
