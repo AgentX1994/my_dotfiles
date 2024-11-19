@@ -56,7 +56,15 @@ require("lazy").setup({
     {"folke/trouble.nvim", dependecies="nvim-tree/nvim-web-devicons"},
     -- Debugger integration
     { "rcarriga/nvim-dap-ui", dependencies = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"} },
-    "ionide/Ionide-vim"
+    "ionide/Ionide-vim",
+    {
+        'MeanderingProgrammer/render-markdown.nvim',
+        dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+        ---@module 'render-markdown'
+        ---@type render.md.UserConfig
+            opts = {},
+    },
+    "terrortylor/nvim-comment"
 })
 
 require("catppuccin").setup({
@@ -143,14 +151,22 @@ vim.g.rustaceanvim = {
         vim.keymap.set("n", "<Leader>a", code_action, {buffer=buffer})
         on_attach(client, buffer)
     end,
-    settings = {
-      -- rust-analyzer language server configuration
-      ["rust-analyzer"] = {
-          check = {
-              command = "clippy"
-          }
-      },
-    },
+  },
+  default_settings = {
+     -- rust-analyzer language server configuration
+     ["rust-analyzer"] = {
+         check = {
+             command = "clippy"
+         },
+         cargo = {
+           buildScripts = {
+             enable = true,
+           },
+         },
+         procMacro = {
+           enable = true,
+         }
+     },
   },
   -- DAP configuration
   dap = {
@@ -170,7 +186,7 @@ lspconfig.standardrb.setup({})
 vim.filetype.add({extension = {wgsl = "wgsl"}})
 local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
 require('nvim-treesitter.configs').setup {
-    ensure_installed = {"lua", "c", "cpp", "python", "rust", "wgsl", "fsharp"},
+    ensure_installed = {"lua", "c", "cpp", "python", "rust", "wgsl", "fsharp", "markdown", "markdown_inline"},
     highlight = {
         enable = true
     },
@@ -344,3 +360,4 @@ vim.api.nvim_set_hl(0, "FloatermBorder", {
 
 -- Setup a mapping for TroubleToggle
 vim.keymap.set("n", "<leader>x", function() require("trouble").toggle() end)
+require('nvim_comment').setup()
