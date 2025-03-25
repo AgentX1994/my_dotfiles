@@ -64,7 +64,14 @@ require("lazy").setup({
         ---@type render.md.UserConfig
             opts = {},
     },
-    "terrortylor/nvim-comment"
+    "terrortylor/nvim-comment",
+    {
+        'windwp/nvim-autopairs',
+        event = "InsertEnter",
+        config = true
+        -- use opts = {} for passing setup options
+        -- this is equivalent to setup({}) function
+    }
 })
 
 require("catppuccin").setup({
@@ -243,6 +250,13 @@ cmp.setup({
     { name = "buffer" },
   },
 })
+-- Insert `(` after select function or method item
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+local cmp = require('cmp')
+cmp.event:on(
+  'confirm_done',
+  cmp_autopairs.on_confirm_done()
+)
 
 -- Normal vim configuration
 vim.g.airline_powerline_fonts = 1
