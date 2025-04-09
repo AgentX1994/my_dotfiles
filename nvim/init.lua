@@ -71,6 +71,10 @@ require("lazy").setup({
         config = true
         -- use opts = {} for passing setup options
         -- this is equivalent to setup({}) function
+    },
+    {
+        "karb94/neoscroll.nvim",
+        opts = {easing = "cubic"},
     }
 })
 
@@ -282,7 +286,9 @@ vim.keymap.set("n", "<leader>fh", builtin.help_tags, {})
 require("diffview").setup({})
 
 -- Setup neogit
-require("neogit").setup({})
+local neogit = require("neogit")
+neogit.setup({})
+vim.keymap.set("n", "<leader>g", neogit.open, {})
 
 require("nvim-tree").setup()
 api = require("nvim-tree.api")
