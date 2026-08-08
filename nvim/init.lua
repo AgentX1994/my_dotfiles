@@ -36,8 +36,15 @@ require("lazy").setup({
     "nvim-telescope/telescope.nvim",
 
     "rafamadriz/friendly-snippets",
-    {"catppuccin/nvim", name = "catppuccin"},
-    "vim-airline/vim-airline",
+    {"catppuccin/nvim", name = "catppuccin", priority=1000, lazy=false},
+    {
+        "nvim-lualine/lualine.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin" },
+        config = function()
+          require('lualine').setup({
+          })
+        end
+    },
     "nvim-tree/nvim-web-devicons",
     {
       "nvim-tree/nvim-tree.lua",
@@ -85,6 +92,7 @@ require("catppuccin").setup({
         treesitter = true,
         dap_ui = true,
         cmp = true,
+        lualine = true,
         native_lsp = {
             enabled = true
         },
@@ -185,13 +193,16 @@ vim.g.rustaceanvim = {
 }
 
 -- setup other LSPs
-local lspconfig = require("lspconfig")
-lspconfig.pyright.setup({})
-lspconfig.ts_ls.setup({})
-lspconfig.clangd.setup({
+vim.lsp.config("pyright", {})
+vim.lsp.enable("pyright")
+vim.lsp.config("ts_ls", {})
+vim.lsp.enable("ts_ls")
+vim.lsp.config("clangd", {
     on_attach=on_attach
 })
-lspconfig.standardrb.setup({})
+vim.lsp.enable("clangd")
+vim.lsp.config("standardrb", {})
+vim.lsp.enable("standardrb")
 
 -- Setup treesitter for parsing/highlighting
 vim.filetype.add({extension = {wgsl = "wgsl"}})
@@ -217,7 +228,8 @@ vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 vim.o.foldlevelstart = 99 -- do not close folds when a buffer is opened
 
 if vim.fn.executable("wgsl_analyzer") == 1 then
-    lspconfig.wgsl_analyzer.setup({})
+    vim.lsp.config("wgsl_analyzer", {})
+    vim.lsp.enable("wgsl_analyzer")
 end
 
 -- Setup Completion
@@ -263,15 +275,13 @@ cmp.event:on(
 )
 
 -- Normal vim configuration
-vim.g.airline_powerline_fonts = 1
-vim.g.airline_theme = 'catppuccin'
+vim.cmd.colorscheme "catppuccin-nvim"
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
 vim.opt.number = true
 vim.opt.termguicolors = true
-vim.cmd.colorscheme "catppuccin"
 vim.opt.clipboard = "unnamedplus"
 
 -- Setup telescope
