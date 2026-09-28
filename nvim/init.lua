@@ -59,7 +59,7 @@ require("lazy").setup({
     },
     "sindrets/diffview.nvim",
     "voldikss/vim-floaterm",
-    {"nvim-treesitter/nvim-treesitter", build=":TSUpdate"},
+    {"nvim-treesitter/nvim-treesitter", lazy = false, build=":TSUpdate"},
     {"folke/trouble.nvim", dependecies="nvim-tree/nvim-web-devicons"},
     -- Debugger integration
     { "rcarriga/nvim-dap-ui", dependencies = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"} },
@@ -206,8 +206,7 @@ vim.lsp.enable("standardrb")
 
 -- Setup treesitter for parsing/highlighting
 vim.filetype.add({extension = {wgsl = "wgsl"}})
-local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
-require('nvim-treesitter.configs').setup {
+require('nvim-treesitter').setup {
     ensure_installed = {"lua", "c", "cpp", "python", "rust", "wgsl", "fsharp", "markdown", "markdown_inline"},
     highlight = {
         enable = true
